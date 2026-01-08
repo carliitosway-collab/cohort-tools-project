@@ -11,35 +11,70 @@ const PORT = process.env.PORT || 5005;
 
 const app = express();
 
+// ======================
 // MIDDLEWARE
+// ======================
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// ======================
 // DOCS
+// ======================
 app.get("/docs", (req, res) => {
   res.sendFile(__dirname + "/views/docs.html");
 });
 
+// ======================
 // ROUTES
+// ======================
 app.use("/api/cohorts", cohortRoutes);
 app.use("/api/students", studentRoutes);
 
-// ERROR HANDLER (simple, válido para Ironhack)
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: "Internal Server Error" });
+// ======================
+// 404 - Route not found
+// ======================
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
 
+// ======================
+// ERROR HANDLER (REST friendly)
+// ======================
+app.use((err, req, res, next) => {
+  console.error("ERROR:", err);
+
+  let status = err.status || 500;
+  let message = err.message || "Internal Server Error";
+
+  // Mongoose: invalid ObjectId
+  if (err.name === "CastError") {
+    status = 400;
+    message = `Invalid ${err.path}: ${err.value}`;
+  }
+
+  // Mongoose: validation errors
+  if (err.name === "ValidationError") {
+    status = 400;
+    message = err.message;
+  }
+
+  res.status(status).json({ message });
+});
+
+// ======================
 // CONNECT DB + START SERVER
+// ======================
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen(PORT, () =>
-      console.log(`Server listening on port ${PORT}`)
-    );
+    app.listen(PORT, () => {
+      console.log(`Server listening on port ${PORT}`);
+    });
   })
-  .catch((err) => console.error("DB connection error:", err));
+  .catch((err) => {
+    console.error("DB connection error:", err);
+  });

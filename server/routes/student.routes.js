@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 
 const Student = require("../models/Student.model");
+
+// Helper: validar ObjectId
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // ==========================
 // GET all students (+ populate cohort)
@@ -20,10 +24,13 @@ router.get("/", async (req, res, next) => {
 // ==========================
 router.get("/cohort/:cohortId", async (req, res, next) => {
   try {
-    const students = await Student.find({
-      cohort: req.params.cohortId,
-    }).populate("cohort");
+    const { cohortId } = req.params;
 
+    if (!isValidObjectId(cohortId)) {
+      return next({ status: 400, message: "Invalid cohortId" });
+    }
+
+    const students = await Student.find({ cohort: cohortId }).populate("cohort");
     res.json(students);
   } catch (err) {
     next(err);
@@ -35,10 +42,16 @@ router.get("/cohort/:cohortId", async (req, res, next) => {
 // ==========================
 router.get("/:studentId", async (req, res, next) => {
   try {
-    const student = await Student.findById(req.params.studentId).populate("cohort");
+    const { studentId } = req.params;
+
+    if (!isValidObjectId(studentId)) {
+      return next({ status: 400, message: "Invalid studentId" });
+    }
+
+    const student = await Student.findById(studentId).populate("cohort");
 
     if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+      return next({ status: 404, message: "Student not found" });
     }
 
     res.json(student);
@@ -53,7 +66,11 @@ router.get("/:studentId", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const newStudent = await Student.create(req.body);
-    res.status(201).json(newStudent);
+
+    // Si quieres devolverlo populateado (bonito para Postman):
+    const createdStudent = await Student.findById(newStudent._id).populate("cohort");
+
+    res.status(201).json(createdStudent);
   } catch (err) {
     next(err);
   }
@@ -64,14 +81,19 @@ router.post("/", async (req, res, next) => {
 // ==========================
 router.put("/:studentId", async (req, res, next) => {
   try {
-    const updatedStudent = await Student.findByIdAndUpdate(
-      req.params.studentId,
-      req.body,
-      { new: true, runValidators: true }
-    ).populate("cohort");
+    const { studentId } = req.params;
+
+    if (!isValidObjectId(studentId)) {
+      return next({ status: 400, message: "Invalid studentId" });
+    }
+
+    const updatedStudent = await Student.findByIdAndUpdate(studentId, req.body, {
+      new: true,
+      runValidators: true,
+    }).populate("cohort");
 
     if (!updatedStudent) {
-      return res.status(404).json({ message: "Student not found" });
+      return next({ status: 404, message: "Student not found" });
     }
 
     res.json(updatedStudent);
@@ -85,13 +107,21 @@ router.put("/:studentId", async (req, res, next) => {
 // ==========================
 router.delete("/:studentId", async (req, res, next) => {
   try {
-    const deletedStudent = await Student.findByIdAndDelete(req.params.studentId);
+    const { studentId } = req.params;
+
+    if (!isValidObjectId(studentId)) {
+      return next({ status: 400, message: "Invalid studentId" });
+    }
+
+    const deletedStudent = await Student.findByIdAndDelete(studentId);
 
     if (!deletedStudent) {
-      return res.status(404).json({ message: "Student not found" });
+      return next({ status: 404, message: "Student not found" });
     }
 
     res.json({ message: "Student deleted", deletedStudent });
+
+    // Alternativa REST pura: res.status(204).send();
   } catch (err) {
     next(err);
   }

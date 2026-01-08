@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 const Student = require("../models/Student.model");
+const isAuthenticated = require("../middleware/jwt.middleware");
 
 // Helper: validar ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -38,9 +39,9 @@ router.get("/cohort/:cohortId", async (req, res, next) => {
 });
 
 // ==========================
-// GET student by id
+// GET student by id (🔒 PROTECTED)
 // ==========================
-router.get("/:studentId", async (req, res, next) => {
+router.get("/:studentId", isAuthenticated, async (req, res, next) => {
   try {
     const { studentId } = req.params;
 
@@ -67,9 +68,7 @@ router.post("/", async (req, res, next) => {
   try {
     const newStudent = await Student.create(req.body);
 
-    // Si quieres devolverlo populateado (bonito para Postman):
     const createdStudent = await Student.findById(newStudent._id).populate("cohort");
-
     res.status(201).json(createdStudent);
   } catch (err) {
     next(err);
@@ -120,8 +119,6 @@ router.delete("/:studentId", async (req, res, next) => {
     }
 
     res.json({ message: "Student deleted", deletedStudent });
-
-    // Alternativa REST pura: res.status(204).send();
   } catch (err) {
     next(err);
   }

@@ -4,12 +4,22 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const mongoose = require("mongoose");
 
+// ======================
+// APP
+// ======================
+const app = express();
+
+// ======================
+// ROUTES IMPORT
+// ======================
 const cohortRoutes = require("./routes/cohort.routes");
 const studentRoutes = require("./routes/student.routes");
+const authRoutes = require("./routes/auth.routes");
 
+// ======================
+// PORT
+// ======================
 const PORT = process.env.PORT || 5005;
-
-const app = express();
 
 // ======================
 // MIDDLEWARE
@@ -30,6 +40,7 @@ app.get("/docs", (req, res) => {
 // ======================
 // ROUTES
 // ======================
+app.use("/auth", authRoutes);
 app.use("/api/cohorts", cohortRoutes);
 app.use("/api/students", studentRoutes);
 
@@ -41,7 +52,7 @@ app.use((req, res) => {
 });
 
 // ======================
-// ERROR HANDLER (REST friendly)
+// ERROR HANDLER
 // ======================
 app.use((err, req, res, next) => {
   console.error("ERROR:", err);
@@ -49,13 +60,11 @@ app.use((err, req, res, next) => {
   let status = err.status || 500;
   let message = err.message || "Internal Server Error";
 
-  // Mongoose: invalid ObjectId
   if (err.name === "CastError") {
     status = 400;
     message = `Invalid ${err.path}: ${err.value}`;
   }
 
-  // Mongoose: validation errors
   if (err.name === "ValidationError") {
     status = 400;
     message = err.message;

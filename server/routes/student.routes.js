@@ -5,13 +5,10 @@ const mongoose = require("mongoose");
 const Student = require("../models/Student.model");
 const isAuthenticated = require("../middleware/jwt.middleware");
 
-// Helper: validar ObjectId
+
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// ==========================
-// GET all students (+ populate cohort)
-// ==========================
-router.get("/", async (req, res, next) => {
+router.get("/", isAuthenticated, async (req, res, next) => {
   try {
     const students = await Student.find().populate("cohort");
     res.json(students);
@@ -20,10 +17,8 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// ==========================
-// GET students by cohort id
-// ==========================
-router.get("/cohort/:cohortId", async (req, res, next) => {
+
+router.get("/cohort/:cohortId", isAuthenticated, async (req, res, next) => {
   try {
     const { cohortId } = req.params;
 
@@ -38,9 +33,7 @@ router.get("/cohort/:cohortId", async (req, res, next) => {
   }
 });
 
-// ==========================
-// GET student by id (🔒 PROTECTED)
-// ==========================
+
 router.get("/:studentId", isAuthenticated, async (req, res, next) => {
   try {
     const { studentId } = req.params;
@@ -61,10 +54,8 @@ router.get("/:studentId", isAuthenticated, async (req, res, next) => {
   }
 });
 
-// ==========================
-// CREATE student
-// ==========================
-router.post("/", async (req, res, next) => {
+
+router.post("/", isAuthenticated, async (req, res, next) => {
   try {
     const newStudent = await Student.create(req.body);
 
@@ -75,10 +66,8 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// ==========================
-// UPDATE student by id
-// ==========================
-router.put("/:studentId", async (req, res, next) => {
+
+router.put("/:studentId", isAuthenticated, async (req, res, next) => {
   try {
     const { studentId } = req.params;
 
@@ -101,10 +90,8 @@ router.put("/:studentId", async (req, res, next) => {
   }
 });
 
-// ==========================
-// DELETE student by id
-// ==========================
-router.delete("/:studentId", async (req, res, next) => {
+
+router.delete("/:studentId", isAuthenticated, async (req, res, next) => {
   try {
     const { studentId } = req.params;
 

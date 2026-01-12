@@ -1,14 +1,14 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 
-// ✅ Ajusta estos require según tus nombres reales:
+
 const Cohort = require("./models/Cohort.model");   
 const Student = require("./models/Student.model"); 
 
 const cohortsData = require("./cohorts.json");
 const studentsData = require("./students.json");
 
-// Normalizadores para que el JSON pase los enums del Schema
+
 const CAMPUS_MAP = {
   MADRID: "Madrid",
   BARCELONA: "Barcelona",
@@ -56,12 +56,12 @@ async function seed() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("✅ Connected to MongoDB for seeding");
 
-    // Limpia colecciones
+
     await Student.deleteMany();
     await Cohort.deleteMany();
     console.log("🧹 Cleared Students & Cohorts collections");
 
-    // Insert cohorts y mapa oldId (num) -> ObjectId
+
     const cohortIdMap = new Map();
 
     for (const c of cohortsData) {
@@ -73,7 +73,7 @@ async function seed() {
 
     console.log(`✅ Inserted ${cohortIdMap.size} cohorts`);
 
-    // Insert students transformando cohort: number -> ObjectId
+   
     const studentsToCreate = studentsData.map((s) => {
       const { _id, cohort, ...rest } = s;
       return {

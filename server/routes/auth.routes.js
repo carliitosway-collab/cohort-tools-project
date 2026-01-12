@@ -5,9 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 const isAuthenticated = require("../middleware/jwt.middleware");
 
-// ==========================
-// POST /auth/signup
-// ==========================
+
 router.post("/signup", async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
@@ -16,13 +14,13 @@ router.post("/signup", async (req, res, next) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Evitar emails duplicados
+
     const foundUser = await User.findOne({ email });
     if (foundUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hashear password
+ 
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -38,9 +36,7 @@ router.post("/signup", async (req, res, next) => {
   }
 });
 
-// ==========================
-// POST /auth/login
-// ==========================
+
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -76,9 +72,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-// ==========================
-// GET /auth/verify (PROTECTED)
-// ==========================
+
 router.get("/verify", isAuthenticated, (req, res) => {
   res.json(req.payload);
 });

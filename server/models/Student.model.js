@@ -34,7 +34,7 @@ const studentSchema = new Schema(
 
     cohort: { type: Schema.Types.ObjectId, ref: "Cohort" },
 
-    // La doc dice “Array” sin estructura → lo dejamos flexible para no romper seeds/tests
+   
     projects: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }

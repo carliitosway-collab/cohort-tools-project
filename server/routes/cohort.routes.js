@@ -3,14 +3,12 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 const Cohort = require("../models/Cohort.model");
+const isAuthenticated = require("../middleware/jwt.middleware");
 
-// Helper: validar ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// ==========================
-// GET all cohorts
-// ==========================
-router.get("/", async (req, res, next) => {
+
+router.get("/", isAuthenticated, async (req, res, next) => {
   try {
     const cohorts = await Cohort.find();
     res.json(cohorts);
@@ -19,10 +17,8 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// ==========================
-// GET cohort by id
-// ==========================
-router.get("/:cohortId", async (req, res, next) => {
+
+router.get("/:cohortId", isAuthenticated, async (req, res, next) => {
   try {
     const { cohortId } = req.params;
 
@@ -42,10 +38,8 @@ router.get("/:cohortId", async (req, res, next) => {
   }
 });
 
-// ==========================
-// CREATE cohort
-// ==========================
-router.post("/", async (req, res, next) => {
+
+router.post("/", isAuthenticated, async (req, res, next) => {
   try {
     const newCohort = await Cohort.create(req.body);
     res.status(201).json(newCohort);
@@ -54,10 +48,8 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// ==========================
-// UPDATE cohort by id
-// ==========================
-router.put("/:cohortId", async (req, res, next) => {
+
+router.put("/:cohortId", isAuthenticated, async (req, res, next) => {
   try {
     const { cohortId } = req.params;
 
@@ -80,10 +72,8 @@ router.put("/:cohortId", async (req, res, next) => {
   }
 });
 
-// ==========================
-// DELETE cohort by id
-// ==========================
-router.delete("/:cohortId", async (req, res, next) => {
+
+router.delete("/:cohortId", isAuthenticated, async (req, res, next) => {
   try {
     const { cohortId } = req.params;
 
@@ -97,10 +87,8 @@ router.delete("/:cohortId", async (req, res, next) => {
       return next({ status: 404, message: "Cohort not found" });
     }
 
-    // Puedes devolver 200 con mensaje (ok para Ironhack)
-    res.json({ message: "Cohort deleted", deletedCohort: deleted });
 
-    // Alternativa más REST: res.status(204).send(); (sin body)
+    res.json({ message: "Cohort deleted", deletedCohort: deleted });
   } catch (err) {
     next(err);
   }
